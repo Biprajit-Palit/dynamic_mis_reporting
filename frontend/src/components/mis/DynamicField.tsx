@@ -28,9 +28,23 @@ export default function DynamicField({
       <select
         aria-label={field.label}
         value={value}
-        onChange={(e) =>
-          onChange(field.name,Number(e.target.value) || e.target.value)
-        }
+        onChange={(e)=>{
+
+            const value = e.target.value;
+
+
+            onChange(
+
+                field.name,
+
+
+                value === ""
+                ? ""
+                : Number(value)
+
+            );
+
+        }}
         className="
           bg-[#1f2937]
           border
@@ -70,14 +84,27 @@ export default function DynamicField({
             : "text"
       }
       value={value}
-      onChange={(e) =>
+      onChange={(e) => {
+
+          const value = e.target.value;
+
+
           onChange(
+
               field.name,
+
+
               field.type === "number"
-                  ? Number(e.target.value)
-                  : e.target.value
-          )
-      }
+
+                  ? value === ""
+                      ? ""
+                      : Number(value)
+
+                  : value
+
+          );
+
+      }}
       placeholder={field.label}
       className="
         bg-[#1f2937]

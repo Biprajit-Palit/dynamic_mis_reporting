@@ -8,6 +8,9 @@ type Props = {
 };
 
 
+type PageItem = number | "...";
+
+
 export default function Pagination({
   page,
   totalPages,
@@ -15,6 +18,93 @@ export default function Pagination({
   onPageChange,
   onSizeChange,
 }: Props) {
+
+
+    function getPages(): PageItem[] {
+
+      const pages: PageItem[] = [];
+
+      if (totalPages <= 7) {
+
+        for (
+          let i = 0;
+          i < totalPages;
+          i++
+        ) {
+          pages.push(i);
+        }
+
+        return pages;
+      }
+
+
+      // first page
+      pages.push(0);
+
+
+      // beginning pages
+      if (page <= 3) {
+
+        pages.push(
+          1,
+          2,
+          3,
+          4
+        );
+
+        pages.push("...");
+
+        pages.push(
+          totalPages - 1
+        );
+
+        return pages;
+      }
+
+
+      // ending pages
+      if (
+        page >= totalPages - 4
+      ) {
+
+        pages.push("...");
+
+
+        for (
+          let i = totalPages - 5;
+          i < totalPages;
+          i++
+        ) {
+
+          pages.push(i);
+        }
+
+
+        return pages;
+      }
+
+
+      // middle pages
+      pages.push("...");
+
+
+      pages.push(
+        page - 1,
+        page,
+        page + 1
+      );
+
+
+      pages.push("...");
+
+
+      pages.push(
+        totalPages - 1
+      );
+
+
+      return pages;
+    }
 
   return (
 
@@ -82,49 +172,67 @@ export default function Pagination({
         ">
 
           {
-            Array.from(
-              { length: totalPages },
-              (_, i) => i
-            )
-            .map((num) => (
+            getPages().map((num,index)=>(
 
-              <button
+              num === "..."
+              ?
+              (
+                <span
+                  key={`dots-${index}`}
+                  className="
+                    px-3
+                    py-2
+                    text-gray-400
+                  "
+                >
 
-                key={num}
+                  ...
 
-                onClick={() =>
-                  onPageChange(num)
-                }
+                </span>
+              )
 
-                className={`
-                  w-9
-                  h-9
-                  rounded-lg
-                  text-sm
-                  font-semibold
-                  transition
+              :
 
-                  ${
-                    page === num
-                    ?
-                    `
-                    bg-blue-600
-                    text-white
-                    shadow-md
-                    `
-                    :
-                    `
-                    bg-gray-800
-                    text-gray-300
-                    hover:bg-gray-700
-                    `
+              (
+                <button
+
+                  key={`page-${num}`}
+
+                  onClick={() =>
+                    onPageChange(num)
                   }
-                `}
-              >
 
-                {num + 1}
 
-              </button>
+                  className={`
+                    w-9
+                    h-9
+                    rounded-lg
+                    text-sm
+                    font-semibold
+                    transition
+
+                    ${
+                      page === num
+                      ?
+                      `
+                      bg-blue-600
+                      text-white
+                      shadow-md
+                      `
+                      :
+                      `
+                      bg-gray-800
+                      text-gray-300
+                      hover:bg-gray-700
+                      `
+                    }
+                  `}
+                >
+
+                  {num + 1}
+
+                </button>
+              )
 
             ))
           }
@@ -135,6 +243,7 @@ export default function Pagination({
 
 
         <button
+          type="button"
 
           disabled={
             page === totalPages - 1
@@ -251,3 +360,6 @@ export default function Pagination({
     </div>
   );
 }
+
+
+

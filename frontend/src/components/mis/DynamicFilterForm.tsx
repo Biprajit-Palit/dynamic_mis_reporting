@@ -28,12 +28,34 @@ export default function DynamicFilterForm({
   onSearch,
 }: Props) {
 
-  function updateField( name: string, value: FilterValue) {
+  function updateField(
+      name:string,
+      value:FilterValue
+  ){
 
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+      setFilters((prev)=>{
+
+
+          const updated = {
+              ...prev
+          };
+
+
+          if(value === ""){
+
+              delete updated[name];
+
+          }
+          else{
+
+              updated[name]=value;
+
+          }
+
+
+          return updated;
+
+      });
   }
 
   return (
@@ -102,6 +124,25 @@ export default function DynamicFilterForm({
           "
         >
           Search
+        </button>
+
+        <button
+
+          onClick={() =>
+            setFilters({})
+          }
+
+          className="
+            px-6
+            py-3
+            rounded-xl
+            bg-red-600
+            hover:bg-red-500
+          "
+        >
+
+        Clear
+
         </button>
 
       </div>

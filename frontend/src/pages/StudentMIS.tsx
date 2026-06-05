@@ -28,7 +28,26 @@ export default function StudentMIS() {
   const [totalPages, setTotalPages] = useState(0);
 
   const [filters, setFilters] =
-    useState<Record<string, FilterValue>>({});
+    useState<Record<string, FilterValue>>(() => {
+
+      try {
+
+        const saved =
+          localStorage.getItem("student_filters");
+
+
+        return saved
+          ? JSON.parse(saved)
+          : {};
+
+      }
+      catch {
+
+        return {};
+
+      }
+
+  });
 
   const [data, setData] =
     useState<StudentRecord[]>([]);
@@ -38,6 +57,20 @@ export default function StudentMIS() {
     const [error, setError] = useState<string | null>(null);
 
     const [report, setReport] = useState<DynamicReport | null>(null);
+
+    useEffect(() => {
+
+
+      localStorage.setItem(
+
+        "student_filters",
+
+        JSON.stringify(filters)
+
+      );
+
+
+    }, [filters]);
 
     useEffect(() => {
       async function loadReport() {

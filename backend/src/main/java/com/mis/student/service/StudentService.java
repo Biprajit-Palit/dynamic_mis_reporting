@@ -25,6 +25,8 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Table;
 
+import java.util.Comparator;
+
 
 @Service
 @RequiredArgsConstructor
@@ -53,10 +55,30 @@ public class StudentService {
 
         Pageable pageable =
                 PageRequest.of(
+
                         page,
+
                         size,
-                        Sort.by("studentId")
-                                .descending()
+
+
+                        Sort.by(
+
+                                Sort.Order.asc(
+                                        "department.departmentName"
+                                ),
+
+
+                                Sort.Order.asc(
+                                        "semester"
+                                ),
+
+
+                                Sort.Order.asc(
+                                        "studentRollNo"
+                                )
+
+                        )
+
                 );
 
 
@@ -161,19 +183,69 @@ public class StudentService {
                 List<Student> students =
                         studentRepository.findAll(
 
-                                StudentSpecification.filter(dto),
+                                StudentSpecification.filter(dto)
 
-                                Sort.by(
+                                // Sort.by(
 
-                                        Sort.Order.asc("department.departmentName"),
+                                //         Sort.Order.asc("department.departmentName"),
 
-                                        Sort.Order.asc("semester"),
+                                //         Sort.Order.asc("semester"),
 
-                                        Sort.Order.asc("studentRollNo")
+                                //         Sort.Order.asc("studentRollNo")
 
-                                )
+                                // )
 
                         );
+
+
+
+                     
+                students.sort(
+
+                        Comparator
+
+                        .comparing(
+                                (Student s) ->
+                                        s.getDepartment()
+                                        .getDepartmentName()
+                        )
+
+
+                        .thenComparing(
+                                Student::getSemester
+                        )
+
+
+                        .thenComparing(
+                                Student::getStudentRollNo
+                        )
+
+
+                        .thenComparing(
+
+                                s -> {
+
+                                if(
+                                        s.getCourses()
+                                        .isEmpty()
+                                ){
+                                        return 0.0;
+                                }
+
+
+                                return s
+                                        .getCourses()
+                                        .get(0)
+                                        .getMarks();
+
+                                },
+
+
+                                Comparator.reverseOrder()
+
+                        )
+
+                );
 
 
 
@@ -359,21 +431,70 @@ public class StudentService {
                         List<Student> students =
                                 studentRepository.findAll(
 
-                                        StudentSpecification.filter(dto),
+                                        StudentSpecification.filter(dto)
 
-                                        Sort.by(
+                                        // Sort.by(
 
-                                                Sort.Order.asc("department.departmentName"),
+                                        //         Sort.Order.asc("department.departmentName"),
 
-                                                Sort.Order.asc("semester"),
+                                        //         Sort.Order.asc("semester"),
 
-                                                Sort.Order.asc("studentRollNo")
+                                        //         Sort.Order.asc("studentRollNo")
 
                                                 
 
-                                        )
+                                        // )
 
                                 );
+
+                        
+                                
+                        students.sort(
+
+                                Comparator
+
+                                .comparing(
+                                        (Student s) ->
+                                                s.getDepartment()
+                                                .getDepartmentName()
+                                )
+
+
+                                .thenComparing(
+                                        Student::getSemester
+                                )
+
+
+                                .thenComparing(
+                                        Student::getStudentRollNo
+                                )
+
+
+                                .thenComparing(
+
+                                        s -> {
+
+                                        if(
+                                                s.getCourses()
+                                                .isEmpty()
+                                        ){
+                                                return 0.0;
+                                        }
+
+
+                                        return s
+                                                .getCourses()
+                                                .get(0)
+                                                .getMarks();
+
+                                        },
+
+
+                                        Comparator.reverseOrder()
+
+                                )
+
+                        );
 
 
 
