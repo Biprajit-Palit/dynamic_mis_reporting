@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState,useEffect,useRef } from "react";
 
 import { getReport } from "../api/dynamic_reportApi";
 
@@ -20,7 +20,13 @@ import Pagination from "../components/mis/Pagination";
 type FilterValue = string | number;
 
 export default function StudentMIS() {
+  const retryCount =
+    useRef(0);
 
+  const MAX_RETRIES = 5;
+
+  const [loadingReport, setLoadingReport] = useState(true);
+  
   const [page, setPage] = useState(0);
 
   const [size, setSize] = useState(10);
@@ -72,35 +78,193 @@ export default function StudentMIS() {
 
     }, [filters]);
 
+    // useEffect(() => {
+    //   async function loadReport() {
+    //     try {
+    //       const data = await getReport(1);
+
+    //       setReport({
+    //         reportId: data.reportId,
+    //         reportName: data.reportName,
+
+    //         input_filters:
+    //           typeof data.inputFilters === "string"
+    //             ? JSON.parse(data.inputFilters)
+    //             : data.inputFilters,
+
+    //         output_columns:
+    //           typeof data.outputColumns === "string"
+    //             ? JSON.parse(data.outputColumns)
+    //             : data.outputColumns
+    //       });
+
+    //     } catch (error) {
+    //       console.error(error);
+    //       setError("Unable to load report config");
+    //     }
+    //   }
+
+    //   loadReport();
+
+    // }, []);
+
+
     useEffect(() => {
+
+
       async function loadReport() {
+
+
+        if(
+          retryCount.current >= MAX_RETRIES
+        ){
+
+          setError(
+            "Unable to load report. Please try again later."
+          );
+
+          return;
+
+        }
+
+
+
         try {
-          const data = await getReport(1);
 
-          setReport({
-            reportId: data.reportId,
-            reportName: data.reportName,
 
-            input_filters:
-              typeof data.inputFilters === "string"
+          setLoadingReport(true);
+
+
+
+          const data =
+            await getReport(1);
+
+
+
+
+          setReport(prev => {
+
+
+            if(prev){
+
+              return prev;
+
+            }
+
+
+            return {
+
+
+              reportId:
+                data.reportId,
+
+
+              reportName:
+                data.reportName,
+
+
+              input_filters:
+
+                typeof data.inputFilters === "string"
+
                 ? JSON.parse(data.inputFilters)
+
                 : data.inputFilters,
 
-            output_columns:
-              typeof data.outputColumns === "string"
+
+
+              output_columns:
+
+                typeof data.outputColumns === "string"
+
                 ? JSON.parse(data.outputColumns)
+
                 : data.outputColumns
+
+            };
+
           });
 
-        } catch (error) {
-          console.error(error);
-          setError("Unable to load report config");
+
+
+          setError(null);
+
+
+          retryCount.current = 0;
+
+
         }
+        catch(error){
+
+
+          console.error(error);
+
+
+
+          retryCount.current += 1;
+
+
+
+          setError(
+
+            `Unable to load report. Retrying ${retryCount.current}/${MAX_RETRIES}`
+
+          );
+
+
+        }
+        finally{
+
+
+          setLoadingReport(false);
+
+
+        }
+
+
       }
+
+
+
 
       loadReport();
 
+
+
+
+      const interval =
+        setInterval(() => {
+
+
+          if(
+            retryCount.current < MAX_RETRIES
+          ){
+
+            loadReport();
+
+          }
+
+
+        },5000);
+
+
+
+
+
+      return () => {
+
+
+        clearInterval(interval);
+
+
+      };
+
+
     }, []);
+
+
+
+
 
     const handleSearch = async (
       pageNumber = page,
@@ -140,7 +304,66 @@ export default function StudentMIS() {
     };
 
     if (!report) {
-      return <div>Loading report...</div>;
+
+
+      return (
+
+        <div
+          className="
+            h-screen
+            flex
+            flex-col
+            items-center
+            justify-center
+            gap-4
+
+            text-white
+          "
+        >
+
+
+          <div
+            className="
+              h-12
+              w-12
+
+              rounded-full
+
+              border-4
+              border-gray-600
+              border-t-blue-500
+
+              animate-spin
+            "
+          />
+
+
+
+          <p
+            className="
+              text-gray-300
+            "
+          >
+
+            {
+              error
+              ??
+              (
+                loadingReport
+                ?
+                "Loading report..."
+                :
+                "Waiting before retry..."
+              )
+            }
+
+          </p>
+
+
+        </div>
+
+      );
+
     }
 
   return (

@@ -9,12 +9,25 @@ public class MisReportingApplication {
 
     public static void main(String[] args) {
 
-        Dotenv dotenv = Dotenv.load();
+        Dotenv dotenv = Dotenv
+                .configure()
+                .ignoreIfMissing()
+                .load();
 
-        System.setProperty("DB_USERNAME", dotenv.get("DB_USERNAME"));
-        System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
 
-        SpringApplication.run(MisReportingApplication.class, args);
+        dotenv.entries()
+                .forEach(entry ->
+                        System.setProperty(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                );
+
+
+        SpringApplication.run(
+                MisReportingApplication.class,
+                args
+        );
     }
 }
 
