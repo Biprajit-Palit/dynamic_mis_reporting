@@ -1,4 +1,4 @@
-CREATE DATABASE student_trainee_nic;
+
 
 
 -- =========================
@@ -206,3 +206,4 @@ CREATE TABLE dynamic_report (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 );
+

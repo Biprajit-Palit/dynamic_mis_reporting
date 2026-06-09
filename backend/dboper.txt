@@ -1,0 +1,4 @@
+TRUNCATE TABLE student,student_course,attendance
+RESTART IDENTITY;
+
+//foreign key so we need to truncate all

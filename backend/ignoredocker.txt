@@ -8,3 +8,8 @@ docker run --env-file .env.docker alpine env   //verify docker can se env
 
 
 docker build --no-cache -t mis-backend .
+
+
+
+
+git rm --cached backend/.env.docker
