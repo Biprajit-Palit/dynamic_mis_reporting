@@ -1,0 +1,10 @@
+docker build -t mis-backend .
+
+docker run --env-file .env.docker -p 8080:8080 mis-backend
+
+
+docker run --env-file .env.docker alpine env   //verify docker can se env
+
+
+
+docker build --no-cache -t mis-backend .
