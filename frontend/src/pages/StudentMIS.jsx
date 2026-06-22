@@ -1,64 +1,44 @@
 import { useState, useEffect, useRef } from "react";
 
 import { getReport } from "../api/dynamic_reportApi";
-
 import DynamicFilterForm from "../components/mis/DynamicFilterForm";
-
 import ResultTable from "../components/mis/ResultTable";
-
-import type { StudentRecord, DynamicReport } from "../types/report";
-
 import {
   searchStudents,
   exportStudentCSV,
   exportStudentPDF,
 } from "../api/studentApi";
-
 import Pagination from "../components/mis/Pagination";
-
-type FilterValue = string | number;
 
 export default function StudentMIS() {
   const retryCount = useRef(0);
-
   const MAX_RETRIES = 5;
 
   const [loadingReport, setLoadingReport] = useState(true);
-
   const [page, setPage] = useState(0);
-
   const [size, setSize] = useState(10);
-
   const [totalPages, setTotalPages] = useState(0);
 
-  const [filters, setFilters] = useState<Record<string, FilterValue>>(() => {
+  const [filters, setFilters] = useState(() => {
     try {
       const saved = localStorage.getItem("student_filters");
-
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
     }
   });
 
-  const [data, setData] = useState<StudentRecord[]>([]);
-
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const [error, setError] = useState<string | null>(null);
-
-  const [report, setReport] = useState<DynamicReport | null>(null);
+  const [error, setError] = useState(null);
+  const [report, setReport] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem(
-      "student_filters",
-
-      JSON.stringify(filters),
-    );
+    localStorage.setItem("student_filters", JSON.stringify(filters));
   }, [filters]);
 
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
+    let timer;
 
     async function loadReport() {
       try {
@@ -69,12 +49,10 @@ export default function StudentMIS() {
         setReport({
           reportId: data.reportId,
           reportName: data.reportName,
-
           input_filters:
             typeof data.inputFilters === "string"
               ? JSON.parse(data.inputFilters)
               : data.inputFilters,
-
           output_columns:
             typeof data.outputColumns === "string"
               ? JSON.parse(data.outputColumns)
@@ -82,14 +60,13 @@ export default function StudentMIS() {
         });
 
         setError(null);
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
 
         retryCount.current += 1;
 
         if (retryCount.current < MAX_RETRIES) {
           setError(`Retrying ${retryCount.current}/${MAX_RETRIES}`);
-
           timer = setTimeout(loadReport, 5000);
         } else {
           setError("Unable to load report. Please try again later.");
@@ -113,20 +90,15 @@ export default function StudentMIS() {
 
       const response = await searchStudents({
         ...filters,
-
         page: pageNumber,
-
         size: pageSize,
       });
 
       setData(response.content);
-
       setPage(response.number);
-
       setTotalPages(response.totalPages);
-    } catch (error) {
-      console.error(error);
-
+    } catch (err) {
+      console.error(err);
       setError("Failed to fetch student records");
     } finally {
       setLoading(false);
@@ -135,38 +107,10 @@ export default function StudentMIS() {
 
   if (!report) {
     return (
-      <div
-        className="
-            h-screen
-            flex
-            flex-col
-            items-center
-            justify-center
-            gap-4
+      <div className="flex flex-col items-center justify-center gap-4 py-24">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-border border-t-primary" />
 
-            text-white
-          "
-      >
-        <div
-          className="
-              h-12
-              w-12
-
-              rounded-full
-
-              border-4
-              border-gray-600
-              border-t-blue-500
-
-              animate-spin
-            "
-        />
-
-        <p
-          className="
-              text-gray-300
-            "
-        >
+        <p className="text-text-muted">
           {error ??
             (loadingReport ? "Loading report..." : "Waiting before retry...")}
         </p>
@@ -177,9 +121,11 @@ export default function StudentMIS() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-4xl font-bold">Dynamic Student MIS</h1>
+        <h1 className="text-3xl font-bold text-text">Dynamic Student MIS</h1>
 
-        <p className="text-gray-400 mt-2">Enterprise reporting engine</p>
+        <p className="mt-2 text-text-muted">
+          Search, filter, and export student records
+        </p>
       </div>
 
       <DynamicFilterForm
@@ -194,14 +140,7 @@ export default function StudentMIS() {
       )}
 
       {loading ? (
-        <div
-          className="
-          flex
-          justify-center
-          py-20
-          text-gray-400
-        "
-        >
+        <div className="flex justify-center py-20 text-gray-400">
           Loading students...
         </div>
       ) : (
@@ -219,14 +158,11 @@ export default function StudentMIS() {
         totalPages={totalPages}
         onPageChange={(p) => {
           setPage(p);
-
           handleSearch(p, size);
         }}
         onSizeChange={(newSize) => {
           setSize(newSize);
-
           setPage(0);
-
           handleSearch(0, newSize);
         }}
       />

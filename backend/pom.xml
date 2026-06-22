@@ -89,7 +89,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-        <groupId>com.opencsv</groupId>
+			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
 			<version>5.9</version>
 		</dependency>
@@ -130,6 +130,8 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<!-- FIX: specify the single main class to resolve ambiguity -->
+					<mainClass>com.mis.ReportingApplication</mainClass>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>

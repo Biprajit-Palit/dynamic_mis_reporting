@@ -1,5 +1,4 @@
-import axios,{AxiosError} from "axios";
-
+import axios from "axios";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -8,7 +7,7 @@ export const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
 
-  (error: AxiosError) => {
+  (error) => {
     if (error.response) {
       const status = error.response.status;
 
@@ -36,16 +35,12 @@ api.interceptors.response.use(
         default:
           console.error("Unexpected error");
       }
-    } 
-    
-    else if (error.request) {
+    } else if (error.request) {
       console.error("Backend not reachable");
-    } 
-    
-    else {
+    } else {
       console.error(error.message);
     }
 
     return Promise.reject(error);
-  }
+  },
 );
