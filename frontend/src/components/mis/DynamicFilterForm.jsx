@@ -102,7 +102,16 @@ export default function DynamicFilterForm({
       <div className="mt-8 flex gap-4">
         <button
           type="button"
-          onClick={() => onSearch()}
+          onClick={() => {
+            if (
+              filters.from_date &&
+              filters.to_date &&
+              filters.from_date > filters.to_date
+            ) {
+              alert("From Date cannot be greater than To Date");
+              return;
+            } onSearch()
+          }}
           className="rounded-xl bg-primary px-6 py-3 font-medium text-white transition hover:bg-primary-hover"
         >
           Search
