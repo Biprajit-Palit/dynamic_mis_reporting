@@ -108,6 +108,7 @@ export default function DynamicFilterForm({
               filters.to_date &&
               filters.from_date > filters.to_date
             ) {
+              // console.log("From Date cannot be greater than To Date")
               alert("From Date cannot be greater than To Date");
               return;
             } onSearch()
