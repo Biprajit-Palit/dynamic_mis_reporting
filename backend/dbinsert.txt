@@ -1,548 +1,334 @@
-INSERT INTO department
-(department_name)
+-- Seed data for NIC MIS (run AFTER Flyway migrations v1, v2, v3)
+-- Safe to re-run: clears existing rows and resets ID sequences.
 
-VALUES
+BEGIN;
 
-('Computer Science'),
-('Mechanical'),
-('Commerce'),
-('Mathematics'),
-('Civil Engineering'),
-('Electrical Engineering'),
-('Physics'),
-('Chemistry');
+TRUNCATE TABLE
+    attendance,
+    student_course,
+    student,
+    course,
+    teacher,
+    department,
+    dynamic_report
+RESTART IDENTITY CASCADE;
 
+-- =========================
+-- DEPARTMENTS
+-- =========================
 
-INSERT INTO teacher
-(teacher_name, email)
+INSERT INTO department (department_name) VALUES
+    ('Computer Science'),
+    ('Mechanical'),
+    ('Commerce'),
+    ('Mathematics'),
+    ('Civil Engineering'),
+    ('Electrical Engineering'),
+    ('Physics'),
+    ('Chemistry');
 
-VALUES
+-- =========================
+-- TEACHERS
+-- =========================
 
-('Dr. Amit Sharma', 'amit.sharma@college.edu'),
-('Prof. Neha Verma', 'neha.verma@college.edu'),
-('Dr. Rajiv Mehta', 'rajiv.mehta@college.edu'),
-('Prof. Sneha Das', 'sneha.das@college.edu'),
-('Dr. Vikram Singh', 'vikram.singh@college.edu'),
-('Prof. Anjali Roy', 'anjali.roy@college.edu'),
-('Dr. Karan Gupta', 'karan.gupta@college.edu'),
-('Prof. Priya Kapoor', 'priya.kapoor@college.edu');
+INSERT INTO teacher (teacher_name, email) VALUES
+    ('Dr. Amit Sharma', 'amit.sharma@college.edu'),
+    ('Prof. Neha Verma', 'neha.verma@college.edu'),
+    ('Dr. Rajiv Mehta', 'rajiv.mehta@college.edu'),
+    ('Prof. Sneha Das', 'sneha.das@college.edu'),
+    ('Dr. Vikram Singh', 'vikram.singh@college.edu'),
+    ('Prof. Anjali Roy', 'anjali.roy@college.edu'),
+    ('Dr. Karan Gupta', 'karan.gupta@college.edu'),
+    ('Prof. Priya Kapoor', 'priya.kapoor@college.edu');
 
+-- =========================
+-- COURSES
+-- =========================
 
+INSERT INTO course (course_name, department_id, teacher_id, credits) VALUES
+    ('DBMS', 1, 1, 4),
+    ('Operating System', 1, 2, 4),
+    ('Computer Networks', 1, 3, 3),
+    ('Data Structures', 1, 1, 4),
+    ('Thermodynamics', 2, 4, 4),
+    ('Fluid Mechanics', 2, 5, 3),
+    ('Accounting', 3, 6, 3),
+    ('Business Economics', 3, 7, 4),
+    ('Linear Algebra', 4, 8, 4),
+    ('Statistics', 4, 3, 3),
+    ('Structural Analysis', 5, 5, 4),
+    ('Surveying', 5, 4, 3),
+    ('Circuit Theory', 6, 2, 4),
+    ('Power Systems', 6, 7, 4),
+    ('Quantum Mechanics', 7, 8, 4),
+    ('Electromagnetism', 7, 6, 3),
+    ('Organic Chemistry', 8, 1, 4),
+    ('Physical Chemistry', 8, 2, 4);
 
-INSERT INTO course
-(course_name, department_id, teacher_id, credits)
+-- =========================
+-- DYNAMIC REPORT (includes student_name filter + v2 course dependency)
+-- =========================
 
-VALUES
-
--- Computer Science
-('DBMS', 1, 1, 4),
-('Operating System', 1, 2, 4),
-('Computer Networks', 1, 3, 3),
-('Data Structures', 1, 1, 4),
-
--- Mechanical
-('Thermodynamics', 2, 4, 4),
-('Fluid Mechanics', 2, 5, 3),
-
--- Commerce
-('Accounting', 3, 6, 3),
-('Business Economics', 3, 7, 4),
-
--- Mathematics
-('Linear Algebra', 4, 8, 4),
-('Statistics', 4, 3, 3),
-
--- Civil Engineering
-('Structural Analysis', 5, 5, 4),
-('Surveying', 5, 4, 3),
-
--- Electrical Engineering
-('Circuit Theory', 6, 2, 4),
-('Power Systems', 6, 7, 4),
-
--- Physics
-('Quantum Mechanics', 7, 8, 4),
-('Electromagnetism', 7, 6, 3),
-
--- Chemistry
-('Organic Chemistry', 8, 1, 4),
-('Physical Chemistry', 8, 2, 4);
-
-
-
-
-
-
-
-
-
-
-INSERT INTO dynamic_report
-(
-    report_name,
-    input_filters,
-    output_columns,
-    query
-)
-
-VALUES
-(
-
-'Student MIS Report',
-
-'[
+INSERT INTO dynamic_report (report_name, input_filters, output_columns, query)
+VALUES (
+    'Student MIS Report',
+    $json$
+[
     {
         "name": "from_date",
         "label": "From Date",
         "type": "date"
     },
-
     {
         "name": "to_date",
         "label": "To Date",
         "type": "date"
     },
-
     {
         "name": "department_id",
         "label": "Department",
         "type": "dropdown",
-
-        "dropdown_query":
-        "SELECT department_id AS value, department_name AS label FROM department ORDER BY department_name"
+        "dropdown_query": "SELECT department_id AS value, department_name AS label FROM department ORDER BY department_name"
     },
-
     {
         "name": "course_id",
         "label": "Course",
         "type": "dropdown",
-
-        "dropdown_query":
-        "SELECT course_id AS value, course_name AS label FROM course ORDER BY course_name"
+        "depends_on": "department_id",
+        "dropdown_query": "SELECT course_id AS value, course_name AS label, department_id AS department_id FROM course ORDER BY course_name"
     },
-
     {
         "name": "student_name",
         "label": "Student Name",
         "type": "textbox"
     },
-
     {
         "name": "semester",
         "label": "Semester",
         "type": "number"
     }
-
-]'::jsonb,
-
-'[
-    {
-        "column": "student_roll_no",
-        "label": "Roll No"
-    },
-
-    {
-        "column": "student_name",
-        "label": "Student Name"
-    },
-
-    {
-        "column": "department_name",
-        "label": "Department"
-    },
-
-    {
-        "column": "course_name",
-        "label": "Course"
-    },
-
-    {
-        "column": "semester",
-        "label": "Semester"
-    },
-
-    {
-        "column": "marks",
-        "label": "Marks"
-    },
-
-    {
-        "column": "attendance_percentage",
-        "label": "Attendance %"
-    },
-
-    {
-        "column": "admission_datetime",
-        "label": "Admission Date"
-    }
-
-]'::jsonb,
-
-'
-
+]
+    $json$::jsonb,
+    $json$
+[
+    {"column": "student_roll_no", "label": "Roll No"},
+    {"column": "student_name", "label": "Student Name"},
+    {"column": "department_name", "label": "Department"},
+    {"column": "course_name", "label": "Course"},
+    {"column": "semester", "label": "Semester"},
+    {"column": "marks", "label": "Marks"},
+    {"column": "attendance_percentage", "label": "Attendance %"},
+    {"column": "admission_datetime", "label": "Admission Date"}
+]
+    $json$::jsonb,
+    $query$
 SELECT
-
     s.student_roll_no,
     s.student_name,
     d.department_name,
     c.course_name,
     s.semester,
-    s.marks,
-    s.attendance_percentage,
+    sc.marks,
+    sc.attendance_percentage,
     s.admission_datetime
-
 FROM student s
-
-JOIN department d
-    ON s.department_id = d.department_id
-
-JOIN course c
-    ON s.course_id = c.course_id
-
-WHERE 1=1
-
-AND (
-    :from_date IS NULL
-    OR s.admission_datetime::date >= :from_date
-)
-
-AND (
-    :to_date IS NULL
-    OR s.admission_datetime::date <= :to_date
-)
-
-AND (
-    :department_id IS NULL
-    OR s.department_id = :department_id
-)
-
-AND (
-    :course_id IS NULL
-    OR s.course_id = :course_id
-)
-
-AND (
-    :student_name IS NULL
-    OR LOWER(s.student_name)
-       LIKE LOWER(''%'' || :student_name || ''%'')
-)
-
-AND (
-    :semester IS NULL
-    OR s.semester = :semester
-)
-
+JOIN department d ON s.department_id = d.department_id
+LEFT JOIN student_course sc ON sc.student_id = s.student_id
+LEFT JOIN course c ON c.course_id = sc.course_id
+WHERE 1 = 1
 ORDER BY s.admission_datetime DESC
-
-'
-
+    $query$
 );
 
-
-
-
-
-
-INSERT INTO student
-(
-    student_roll_no,
-    student_name,
-    department_id,
-    semester,
-    admission_datetime
-)
-VALUES
-('CSE001','Rahul Singh',1,3,'2026-01-10'),
-('CSE002','Priya Kapoor',1,5,'2026-01-15'),
-('CSE003','Anjali Roy',1,6,'2026-02-10'),
-('CSE004','Aditya Verma',1,4,'2026-02-18'),
-('CSE005','Ishita Das',1,7,'2026-03-05'),
-('CSE006','Rohan Gupta',1,2,'2026-03-12'),
-('CSE007','Neha Sharma',1,5,'2026-04-01'),
-
-('ME001','Aman Verma',2,2,'2026-01-20'),
-('ME002','Rohit Yadav',2,3,'2026-02-15'),
-('ME003','Harsh Patel',2,5,'2026-03-20'),
-('ME004','Kavita Rao',2,7,'2026-04-05'),
-('ME005','Arpit Kumar',2,6,'2026-04-15'),
-
-('COM001','Sneha Das',3,4,'2026-01-25'),
-('COM002','Neha Gupta',3,2,'2026-02-22'),
-('COM003','Ankit Jain',3,3,'2026-03-25'),
-('COM004','Tanvi Sharma',3,6,'2026-04-12'),
-('COM005','Vivek Agarwal',3,5,'2026-05-01'),
-
-('MTH001','Vikas Sharma',4,1,'2026-01-12'),
-('MTH002','Karan Mehta',4,5,'2026-02-09'),
-('MTH003','Abhishek Roy',4,4,'2026-03-16'),
-('MTH004','Shreya Nair',4,2,'2026-04-18'),
-('MTH005','Pallavi Iyer',4,6,'2026-05-05'),
-
-('CIV001','Arjun Das',5,4,'2026-01-18'),
-('CIV002','Meera Joshi',5,6,'2026-02-27'),
-('CIV003','Mohit Singh',5,8,'2026-03-30'),
-('CIV004','Divya Menon',5,5,'2026-04-21'),
-('CIV005','Rajesh Kumar',5,7,'2026-05-10'),
-
-('EEE001','Sourav Roy',6,3,'2026-01-30'),
-('EEE002','Pooja Sen',6,5,'2026-02-28'),
-('EEE003','Nikhil Bansal',6,7,'2026-03-28'),
-('EEE004','Ayesha Khan',6,4,'2026-04-28'),
-('EEE005','Aarav Choudhury',6,6,'2026-05-18'),
-
-('PHY001','Rakesh Kumar',7,2,'2026-01-05'),
-('PHY002','Nisha Agarwal',7,4,'2026-02-06'),
-('PHY003','Rahul Mehta',7,5,'2026-03-07'),
-('PHY004','Sneha Kapoor',7,7,'2026-04-08'),
-('PHY005','Varun Mishra',7,3,'2026-05-09'),
-
-('CHE001','Deepak Sharma',8,1,'2026-01-11'),
-('CHE002','Riya Banerjee',8,6,'2026-02-12'),
-('CHE003','Amit Das',8,3,'2026-03-13'),
-('CHE004','Priyanka Sen',8,6,'2026-04-14'),
-('CHE005','Rajat Sinha',8,5,'2026-05-15'),
-
-('CSE008','Kunal Das',1,8,'2026-06-01'),
-('ME006','Swati Rao',2,8,'2026-06-02'),
-('COM006','Ananya Roy',3,5,'2026-06-03'),
-('MTH006','Sagar Bose',4,7,'2026-06-04'),
-('EEE006','Tanisha Roy',6,6,'2026-06-05'),
-('PHY006','Arjun Verma',7,4,'2026-06-06'),
-('CHE006','Mitali Ghosh',8,7,'2026-06-07');
-
-
-
-INSERT INTO student_course
-(
-student_id,
-course_id,
-marks,
-attendance_percentage
-)
-VALUES
-(1,1,88,92),
-(1,2,85,90),
-(1,3,91,95),
-
-(2,1,90,96),
-(2,4,89,94),
-
-(3,2,84,88),
-(3,3,86,91),
-
-(4,1,93,97),
-(4,4,95,98),
-
-(5,2,87,90),
-(5,3,83,86),
-
-(6,1,79,84),
-(7,4,92,95),
-
-
-(8,5,75,82),
-(8,6,80,85),
-
-(9,5,78,88),
-(10,6,91,95),
-(11,5,84,89),
-(12,6,86,90),
-
-
-(13,7,82,89),
-(13,8,85,91),
-
-(14,7,78,84),
-(15,8,88,93),
-(16,7,91,96),
-(17,8,80,87),
-
-
-(18,9,95,98),
-(18,10,91,94),
-
-(19,9,89,93),
-(20,10,94,97),
-(21,9,82,86),
-(22,10,88,92),
-
-
-(23,11,83,88),
-(23,12,86,90),
-
-(24,11,79,85),
-(25,12,90,94),
-(26,11,87,92),
-(27,12,84,89),
-
-
-(28,13,88,93),
-(28,14,91,95),
-
-(29,13,86,90),
-(30,14,92,96),
-(31,13,84,89),
-(32,14,94,98),
-
-
-(33,15,79,86),
-(33,16,82,88),
-
-(34,15,91,96),
-(35,16,87,92),
-(36,15,85,90),
-(37,16,89,94),
-
-
-(38,17,76,82),
-(38,18,80,86),
-
-(39,17,92,95),
-(40,18,88,93),
-(41,17,84,89),
-(42,18,90,94),
-
-
-(43,1,96,99),
-(44,5,87,91),
-(45,7,86,90),
-(46,9,92,96),
-(47,14,95,99),
-(48,15,84,88),
-(49,18,91,95),
-
-
-
-
-
-INSERT INTO attendance
-(
-    student_id,
-    course_id,
-    attendance_date,
-    status
-)
-VALUES
-
-(1,1,'2026-06-01','Present'),
-(1,2,'2026-06-02','Present'),
-(1,3,'2026-06-03','Absent'),
-
-(2,1,'2026-06-01','Present'),
-(2,4,'2026-06-02','Present'),
-
-(3,2,'2026-06-01','Absent'),
-(3,3,'2026-06-02','Present'),
-
-(4,1,'2026-06-01','Present'),
-(4,4,'2026-06-02','Present'),
-
-(5,2,'2026-06-01','Present'),
-(5,3,'2026-06-02','Absent'),
-
-(6,1,'2026-06-01','Present'),
-
-(7,4,'2026-06-01','Present'),
-
-
-(8,5,'2026-06-01','Absent'),
-(8,6,'2026-06-02','Present'),
-
-(9,5,'2026-06-01','Present'),
-
-(10,6,'2026-06-01','Present'),
-
-(11,5,'2026-06-01','Absent'),
-
-(12,6,'2026-06-01','Present'),
-
-
-(13,7,'2026-06-01','Present'),
-(13,8,'2026-06-02','Present'),
-
-(14,7,'2026-06-01','Absent'),
-
-(15,8,'2026-06-01','Present'),
-
-(16,7,'2026-06-01','Present'),
-
-(17,8,'2026-06-01','Absent'),
-
-
-(18,9,'2026-06-01','Present'),
-(18,10,'2026-06-02','Present'),
-
-(19,9,'2026-06-01','Present'),
-
-(20,10,'2026-06-01','Absent'),
-
-(21,9,'2026-06-01','Present'),
-
-(22,10,'2026-06-01','Present'),
-
-
-(23,11,'2026-06-01','Present'),
-(23,12,'2026-06-02','Absent'),
-
-(24,11,'2026-06-01','Present'),
-
-(25,12,'2026-06-01','Present'),
-
-(26,11,'2026-06-01','Absent'),
-
-(27,12,'2026-06-01','Present'),
-
-
-(28,13,'2026-06-01','Present'),
-(28,14,'2026-06-02','Present'),
-
-(29,13,'2026-06-01','Absent'),
-
-(30,14,'2026-06-01','Present'),
-
-(31,13,'2026-06-01','Present'),
-
-(32,14,'2026-06-01','Present'),
-
-
-(33,15,'2026-06-01','Absent'),
-(33,16,'2026-06-02','Present'),
-
-(34,15,'2026-06-01','Present'),
-
-(35,16,'2026-06-01','Present'),
-
-(36,15,'2026-06-01','Absent'),
-
-(37,16,'2026-06-01','Present'),
-
-
-(38,17,'2026-06-01','Present'),
-(38,18,'2026-06-02','Absent'),
-
-(39,17,'2026-06-01','Present'),
-
-(40,18,'2026-06-01','Present'),
-
-(41,17,'2026-06-01','Absent'),
-
-(42,18,'2026-06-01','Present'),
-
-
-(43,1,'2026-06-01','Present'),
-
-(44,5,'2026-06-01','Present'),
-
-(45,7,'2026-06-01','Absent'),
-
-(46,9,'2026-06-01','Present'),
-
-(47,14,'2026-06-01','Present'),
-
-(48,15,'2026-06-01','Absent'),
-
-(49,18,'2026-06-01','Present');
-
-
-
-
+-- =========================
+-- STUDENTS
+-- =========================
+
+INSERT INTO student (student_roll_no, student_name, department_id, semester, admission_datetime) VALUES
+    ('CSE001', 'Rahul Singh', 1, 3, '2026-01-10'),
+    ('CSE002', 'Priya Kapoor', 1, 5, '2026-01-15'),
+    ('CSE003', 'Anjali Roy', 1, 6, '2026-02-10'),
+    ('CSE004', 'Aditya Verma', 1, 4, '2026-02-18'),
+    ('CSE005', 'Ishita Das', 1, 7, '2026-03-05'),
+    ('CSE006', 'Rohan Gupta', 1, 2, '2026-03-12'),
+    ('CSE007', 'Neha Sharma', 1, 5, '2026-04-01'),
+    ('ME001', 'Aman Verma', 2, 2, '2026-01-20'),
+    ('ME002', 'Rohit Yadav', 2, 3, '2026-02-15'),
+    ('ME003', 'Harsh Patel', 2, 5, '2026-03-20'),
+    ('ME004', 'Kavita Rao', 2, 7, '2026-04-05'),
+    ('ME005', 'Arpit Kumar', 2, 6, '2026-04-15'),
+    ('COM001', 'Sneha Das', 3, 4, '2026-01-25'),
+    ('COM002', 'Neha Gupta', 3, 2, '2026-02-22'),
+    ('COM003', 'Ankit Jain', 3, 3, '2026-03-25'),
+    ('COM004', 'Tanvi Sharma', 3, 6, '2026-04-12'),
+    ('COM005', 'Vivek Agarwal', 3, 5, '2026-05-01'),
+    ('MTH001', 'Vikas Sharma', 4, 1, '2026-01-12'),
+    ('MTH002', 'Karan Mehta', 4, 5, '2026-02-09'),
+    ('MTH003', 'Abhishek Roy', 4, 4, '2026-03-16'),
+    ('MTH004', 'Shreya Nair', 4, 2, '2026-04-18'),
+    ('MTH005', 'Pallavi Iyer', 4, 6, '2026-05-05'),
+    ('CIV001', 'Arjun Das', 5, 4, '2026-01-18'),
+    ('CIV002', 'Meera Joshi', 5, 6, '2026-02-27'),
+    ('CIV003', 'Mohit Singh', 5, 8, '2026-03-30'),
+    ('CIV004', 'Divya Menon', 5, 5, '2026-04-21'),
+    ('CIV005', 'Rajesh Kumar', 5, 7, '2026-05-10'),
+    ('EEE001', 'Sourav Roy', 6, 3, '2026-01-30'),
+    ('EEE002', 'Pooja Sen', 6, 5, '2026-02-28'),
+    ('EEE003', 'Nikhil Bansal', 6, 7, '2026-03-28'),
+    ('EEE004', 'Ayesha Khan', 6, 4, '2026-04-28'),
+    ('EEE005', 'Aarav Choudhury', 6, 6, '2026-05-18'),
+    ('PHY001', 'Rakesh Kumar', 7, 2, '2026-01-05'),
+    ('PHY002', 'Nisha Agarwal', 7, 4, '2026-02-06'),
+    ('PHY003', 'Rahul Mehta', 7, 5, '2026-03-07'),
+    ('PHY004', 'Sneha Kapoor', 7, 7, '2026-04-08'),
+    ('PHY005', 'Varun Mishra', 7, 3, '2026-05-09'),
+    ('CHE001', 'Deepak Sharma', 8, 1, '2026-01-11'),
+    ('CHE002', 'Riya Banerjee', 8, 6, '2026-02-12'),
+    ('CHE003', 'Amit Das', 8, 3, '2026-03-13'),
+    ('CHE004', 'Priyanka Sen', 8, 6, '2026-04-14'),
+    ('CHE005', 'Rajat Sinha', 8, 5, '2026-05-15'),
+    ('CSE008', 'Kunal Das', 1, 8, '2026-06-01'),
+    ('ME006', 'Swati Rao', 2, 8, '2026-06-02'),
+    ('COM006', 'Ananya Roy', 3, 5, '2026-06-03'),
+    ('MTH006', 'Sagar Bose', 4, 7, '2026-06-04'),
+    ('EEE006', 'Tanisha Roy', 6, 6, '2026-06-05'),
+    ('PHY006', 'Arjun Verma', 7, 4, '2026-06-06'),
+    ('CHE006', 'Mitali Ghosh', 8, 7, '2026-06-07');
+
+-- =========================
+-- STUDENT COURSES
+-- =========================
+
+INSERT INTO student_course (student_id, course_id, marks, attendance_percentage) VALUES
+    (1, 1, 88, 92),
+    (1, 2, 85, 90),
+    (1, 3, 91, 95),
+    (2, 1, 90, 96),
+    (2, 4, 89, 94),
+    (3, 2, 84, 88),
+    (3, 3, 86, 91),
+    (4, 1, 93, 97),
+    (4, 4, 95, 98),
+    (5, 2, 87, 90),
+    (5, 3, 83, 86),
+    (6, 1, 79, 84),
+    (7, 4, 92, 95),
+    (8, 5, 75, 82),
+    (8, 6, 80, 85),
+    (9, 5, 78, 88),
+    (10, 6, 91, 95),
+    (11, 5, 84, 89),
+    (12, 6, 86, 90),
+    (13, 7, 82, 89),
+    (13, 8, 85, 91),
+    (14, 7, 78, 84),
+    (15, 8, 88, 93),
+    (16, 7, 91, 96),
+    (17, 8, 80, 87),
+    (18, 9, 95, 98),
+    (18, 10, 91, 94),
+    (19, 9, 89, 93),
+    (20, 10, 94, 97),
+    (21, 9, 82, 86),
+    (22, 10, 88, 92),
+    (23, 11, 83, 88),
+    (23, 12, 86, 90),
+    (24, 11, 79, 85),
+    (25, 12, 90, 94),
+    (26, 11, 87, 92),
+    (27, 12, 84, 89),
+    (28, 13, 88, 93),
+    (28, 14, 91, 95),
+    (29, 13, 86, 90),
+    (30, 14, 92, 96),
+    (31, 13, 84, 89),
+    (32, 14, 94, 98),
+    (33, 15, 79, 86),
+    (33, 16, 82, 88),
+    (34, 15, 91, 96),
+    (35, 16, 87, 92),
+    (36, 15, 85, 90),
+    (37, 16, 89, 94),
+    (38, 17, 76, 82),
+    (38, 18, 80, 86),
+    (39, 17, 92, 95),
+    (40, 18, 88, 93),
+    (41, 17, 84, 89),
+    (42, 18, 90, 94),
+    (43, 1, 96, 99),
+    (44, 5, 87, 91),
+    (45, 7, 86, 90),
+    (46, 9, 92, 96),
+    (47, 14, 95, 99),
+    (48, 15, 84, 88),
+    (49, 18, 91, 95);
+
+-- =========================
+-- ATTENDANCE
+-- =========================
+
+INSERT INTO attendance (student_id, course_id, attendance_date, status) VALUES
+    (1, 1, '2026-06-01', 'Present'),
+    (1, 2, '2026-06-02', 'Present'),
+    (1, 3, '2026-06-03', 'Absent'),
+    (2, 1, '2026-06-01', 'Present'),
+    (2, 4, '2026-06-02', 'Present'),
+    (3, 2, '2026-06-01', 'Absent'),
+    (3, 3, '2026-06-02', 'Present'),
+    (4, 1, '2026-06-01', 'Present'),
+    (4, 4, '2026-06-02', 'Present'),
+    (5, 2, '2026-06-01', 'Present'),
+    (5, 3, '2026-06-02', 'Absent'),
+    (6, 1, '2026-06-01', 'Present'),
+    (7, 4, '2026-06-01', 'Present'),
+    (8, 5, '2026-06-01', 'Absent'),
+    (8, 6, '2026-06-02', 'Present'),
+    (9, 5, '2026-06-01', 'Present'),
+    (10, 6, '2026-06-01', 'Present'),
+    (11, 5, '2026-06-01', 'Absent'),
+    (12, 6, '2026-06-01', 'Present'),
+    (13, 7, '2026-06-01', 'Present'),
+    (13, 8, '2026-06-02', 'Present'),
+    (14, 7, '2026-06-01', 'Absent'),
+    (15, 8, '2026-06-01', 'Present'),
+    (16, 7, '2026-06-01', 'Present'),
+    (17, 8, '2026-06-01', 'Absent'),
+    (18, 9, '2026-06-01', 'Present'),
+    (18, 10, '2026-06-02', 'Present'),
+    (19, 9, '2026-06-01', 'Present'),
+    (20, 10, '2026-06-01', 'Absent'),
+    (21, 9, '2026-06-01', 'Present'),
+    (22, 10, '2026-06-01', 'Present'),
+    (23, 11, '2026-06-01', 'Present'),
+    (23, 12, '2026-06-02', 'Absent'),
+    (24, 11, '2026-06-01', 'Present'),
+    (25, 12, '2026-06-01', 'Present'),
+    (26, 11, '2026-06-01', 'Absent'),
+    (27, 12, '2026-06-01', 'Present'),
+    (28, 13, '2026-06-01', 'Present'),
+    (28, 14, '2026-06-02', 'Present'),
+    (29, 13, '2026-06-01', 'Absent'),
+    (30, 14, '2026-06-01', 'Present'),
+    (31, 13, '2026-06-01', 'Present'),
+    (32, 14, '2026-06-01', 'Present'),
+    (33, 15, '2026-06-01', 'Absent'),
+    (33, 16, '2026-06-02', 'Present'),
+    (34, 15, '2026-06-01', 'Present'),
+    (35, 16, '2026-06-01', 'Present'),
+    (36, 15, '2026-06-01', 'Absent'),
+    (37, 16, '2026-06-01', 'Present'),
+    (38, 17, '2026-06-01', 'Present'),
+    (38, 18, '2026-06-02', 'Absent'),
+    (39, 17, '2026-06-01', 'Present'),
+    (40, 18, '2026-06-01', 'Present'),
+    (41, 17, '2026-06-01', 'Absent'),
+    (42, 18, '2026-06-01', 'Present'),
+    (43, 1, '2026-06-01', 'Present'),
+    (44, 5, '2026-06-01', 'Present'),
+    (45, 7, '2026-06-01', 'Absent'),
+    (46, 9, '2026-06-01', 'Present'),
+    (47, 14, '2026-06-01', 'Present'),
+    (48, 15, '2026-06-01', 'Absent'),
+    (49, 18, '2026-06-01', 'Present');
+
+COMMIT;

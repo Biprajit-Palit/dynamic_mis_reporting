@@ -12,9 +12,11 @@ export default function Sidebar() {
     <aside className="flex w-72 shrink-0 flex-col justify-between border-r border-border-sidebar bg-sidebar p-6 shadow-sidebar">
       <div>
         <div className="mb-10">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white">
-            NIC
-          </div>
+          <img
+            src="/mislogo.png"
+            alt="NIC MIS Reporting"
+            className="mb-3 h-14 w-auto rounded-xl bg-white p-1"
+          />
           <h1 className="text-xl font-bold tracking-wide text-text-inverse">
             MIS Reporting
           </h1>
