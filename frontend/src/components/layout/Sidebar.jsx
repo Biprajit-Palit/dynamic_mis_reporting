@@ -1,10 +1,7 @@
 const navItems = [
-  { label: "Dashboard", active: false },
+
   { label: "Student MIS", active: true },
-  { label: "Teacher MIS", active: false },
-  { label: "Analytics", active: false },
-  { label: "Audit Logs", active: false },
-  { label: "Settings", active: false },
+  
 ];
 
 export default function Sidebar() {
